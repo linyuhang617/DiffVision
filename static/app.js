@@ -175,6 +175,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="section-title">差異區域</p>
         ${regionRows}
       </div>
+      <div class="download-card">
+        <p class="section-title">下載結果</p>
+        <div class="download-row">
+          <button class="download-btn" onclick="window.location.href='/download/${data.comparison_id}?format=image'">
+            ⬇ 下載標記圖（PNG）
+          </button>
+          <button class="download-btn" onclick="window.location.href='/download/${data.comparison_id}?format=json'">
+            ⬇ 下載報告（JSON）
+          </button>
+        </div>
+      </div>
     `;
     resultSection.classList.remove("hidden");
   }
