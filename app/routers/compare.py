@@ -6,7 +6,7 @@ import cv2
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services import compare_service, diff_service, align_service, region_service
+from app.services import compare_service, diff_service, align_service, region_service, pdf_service
 from app.utils import image_io
 
 router = APIRouter()
@@ -27,8 +27,21 @@ async def compare(req: CompareRequest):
         if not out_dir.exists():
             raise HTTPException(status_code=404, detail="找不到對應的比對資料")
 
-        img_a = image_io.load_image(out_dir / "a.png")
-        img_b = image_io.load_image(out_dir / "b.png")
+        meta = json.loads((out_dir / "meta.json").read_text())
+
+        if meta["file_type_a"] == "pdf":
+            if req.page_a >= meta["page_count_a"]:
+                raise HTTPException(status_code=400, detail="A 頁碼超出範圍")
+            img_a = pdf_service.pdf_page_to_image(out_dir / "a.pdf", req.page_a)
+        else:
+            img_a = image_io.load_image(out_dir / "a.png")
+
+        if meta["file_type_b"] == "pdf":
+            if req.page_b >= meta["page_count_b"]:
+                raise HTTPException(status_code=400, detail="B 頁碼超出範圍")
+            img_b = pdf_service.pdf_page_to_image(out_dir / "b.pdf", req.page_b)
+        else:
+            img_b = image_io.load_image(out_dir / "b.png")
 
         gray_a = cv2.cvtColor(img_a, cv2.COLOR_BGR2GRAY)
         gray_b = cv2.cvtColor(img_b, cv2.COLOR_BGR2GRAY)
