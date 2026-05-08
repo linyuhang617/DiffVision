@@ -17,34 +17,45 @@
         <label for="input-a" class="upload-label">
           <span class="upload-icon">＋</span>
           <span class="upload-text">Image A</span>
-          <span class="upload-hint">點擊選擇圖片</span>
+          <span class="upload-hint">點擊選擇圖片或 PDF</span>
         </label>
-        <input type="file" id="input-a" accept="image/jpeg,image/png,image/webp" hidden />
+        <input type="file" id="input-a" accept="image/jpeg,image/png,image/webp,application/pdf" hidden />
       </div>
       <div class="upload-divider">VS</div>
       <div class="upload-card" id="card-b">
         <label for="input-b" class="upload-label">
           <span class="upload-icon">＋</span>
           <span class="upload-text">Image B</span>
-          <span class="upload-hint">點擊選擇圖片</span>
+          <span class="upload-hint">點擊選擇圖片或 PDF</span>
         </label>
-        <input type="file" id="input-b" accept="image/jpeg,image/png,image/webp" hidden />
+        <input type="file" id="input-b" accept="image/jpeg,image/png,image/webp,application/pdf" hidden />
       </div>
     </section>
+
     <div id="status-bar" class="status-bar hidden"></div>
+
     <section id="preview-section" class="hidden">
       <h2 class="section-title">預覽</h2>
       <div class="preview-row">
         <div class="preview-col">
           <p class="preview-label">Image A</p>
           <img id="preview-a" src="" alt="Preview A" />
+          <div id="page-selector-a" class="page-selector hidden">
+            <label for="page-a">頁碼：</label>
+            <select id="page-a"></select>
+          </div>
         </div>
         <div class="preview-col">
           <p class="preview-label">Image B</p>
           <img id="preview-b" src="" alt="Preview B" />
+          <div id="page-selector-b" class="page-selector hidden">
+            <label for="page-b">頁碼：</label>
+            <select id="page-b"></select>
+          </div>
         </div>
       </div>
     </section>
+
     <section id="result-section" class="hidden"></section>
   </main>
   <script src="/app.js"></script>

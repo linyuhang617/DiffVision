@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 
 import cv2
+import fitz
 import numpy as np
 from fastapi import APIRouter, HTTPException, UploadFile
 
@@ -13,7 +14,7 @@ from app.utils.image_io import save_image
 
 router = APIRouter()
 
-ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
 
 
 def _cleanup_old_temp(temp_dir: Path, retention_hours: float) -> None:
@@ -25,12 +26,24 @@ def _cleanup_old_temp(temp_dir: Path, retention_hours: float) -> None:
             shutil.rmtree(entry, ignore_errors=True)
 
 
-def _decode_upload(content: bytes) -> np.ndarray:
+def _decode_image(content: bytes) -> np.ndarray:
     arr = np.frombuffer(content, dtype=np.uint8)
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if img is None:
         raise ValueError("Cannot decode image data")
     return img
+
+
+def _pdf_page_to_image(content: bytes, page_index: int = 0) -> tuple[np.ndarray, int]:
+    doc = fitz.open(stream=content, filetype="pdf")
+    page_count = len(doc)
+    page = doc[page_index]
+    pix = page.get_pixmap(dpi=150)
+    img_bytes = pix.tobytes("png")
+    arr = np.frombuffer(img_bytes, dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    doc.close()
+    return img, page_count
 
 
 @router.post("/upload")
@@ -55,34 +68,43 @@ async def upload(file_a: UploadFile, file_b: UploadFile):
         if len(content_b) > limit:
             raise HTTPException(status_code=413, detail="Image B 超過上限")
 
-        try:
-            img_a = _decode_upload(content_a)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Image A 無法解析")
-        try:
-            img_b = _decode_upload(content_b)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Image B 無法解析")
-
         comparison_id = uuid.uuid4().hex
         out_dir = temp_dir / comparison_id
         out_dir.mkdir(parents=True, exist_ok=True)
 
+        meta = {"file_type_a": "image", "file_type_b": "image",
+                "page_count_a": None, "page_count_b": None}
+
+        # 處理 A
+        if file_a.content_type == "application/pdf":
+            img_a, count_a = _pdf_page_to_image(content_a)
+            (out_dir / "a.pdf").write_bytes(content_a)
+            meta["file_type_a"] = "pdf"
+            meta["page_count_a"] = count_a
+        else:
+            img_a = _decode_image(content_a)
+
+        # 處理 B
+        if file_b.content_type == "application/pdf":
+            img_b, count_b = _pdf_page_to_image(content_b)
+            (out_dir / "b.pdf").write_bytes(content_b)
+            meta["file_type_b"] = "pdf"
+            meta["page_count_b"] = count_b
+        else:
+            img_b = _decode_image(content_b)
+
         save_image(img_a, out_dir / "a.png")
         save_image(img_b, out_dir / "b.png")
-
-        meta = {
-            "file_type_a": "image",
-            "file_type_b": "image",
-            "page_count_a": None,
-            "page_count_b": None,
-        }
         (out_dir / "meta.json").write_text(json.dumps(meta))
 
         return {
             "comparison_id": comparison_id,
             "image_a_url": f"/temp/{comparison_id}/a.png",
             "image_b_url": f"/temp/{comparison_id}/b.png",
+            "file_type_a": meta["file_type_a"],
+            "file_type_b": meta["file_type_b"],
+            "page_count_a": meta["page_count_a"],
+            "page_count_b": meta["page_count_b"],
         }
 
     except HTTPException:

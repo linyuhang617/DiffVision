@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultSection  = document.getElementById("result-section");
   const previewA = document.getElementById("preview-a");
   const previewB = document.getElementById("preview-b");
+  const pageSelectorA = document.getElementById("page-selector-a");
+  const pageSelectorB = document.getElementById("page-selector-b");
+  const pageSelectA = document.getElementById("page-a");
+  const pageSelectB = document.getElementById("page-b");
 
   function showStatus(message, type) {
     statusBar.textContent = message;
@@ -26,7 +30,23 @@ document.addEventListener("DOMContentLoaded", () => {
     previewSection.classList.add("hidden");
     resultSection.classList.add("hidden");
     resultSection.innerHTML = "";
+    pageSelectorA.classList.add("hidden");
+    pageSelectorB.classList.add("hidden");
+    pageSelectA.innerHTML = "";
+    pageSelectB.innerHTML = "";
     currentComparisonId = null;
+  }
+
+  function buildPageSelector(selectEl, selectorEl, pageCount) {
+    if (!pageCount) return;
+    selectEl.innerHTML = "";
+    for (let i = 1; i <= pageCount; i++) {
+      const opt = document.createElement("option");
+      opt.value = i - 1;
+      opt.textContent = `第 ${i} 頁`;
+      selectEl.appendChild(opt);
+    }
+    selectorEl.classList.remove("hidden");
   }
 
   inputA.addEventListener("change", () => {
@@ -78,6 +98,9 @@ document.addEventListener("DOMContentLoaded", () => {
     previewB.src = data.image_b_url;
     previewSection.classList.remove("hidden");
 
+    buildPageSelector(pageSelectA, pageSelectorA, data.page_count_a);
+    buildPageSelector(pageSelectB, pageSelectorB, data.page_count_b);
+
     clearStatus();
     runCompare();
   }
@@ -85,12 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
   async function runCompare() {
     showStatus("比對中…", "loading");
 
+    const pageA = parseInt(pageSelectA.value || "0");
+    const pageB = parseInt(pageSelectB.value || "0");
+
     let response;
     try {
       response = await fetch("/compare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comparison_id: currentComparisonId }),
+        body: JSON.stringify({
+          comparison_id: currentComparisonId,
+          page_a: pageA,
+          page_b: pageB,
+        }),
       });
     } catch {
       showStatus("比對請求失敗。", "error");
