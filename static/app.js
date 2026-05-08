@@ -119,6 +119,16 @@ document.addEventListener("DOMContentLoaded", () => {
       ? `<span class="align-tag success">✓ 已自動對齊</span>`
       : `<span class="align-tag warn">⚠ 對齊失敗</span>`;
 
+    const severityColor = { high: "#E05252", medium: "#F5A623", low: "#F0C040" };
+
+    const regionRows = data.regions.length === 0
+      ? `<p class="no-regions">未偵測到差異</p>`
+      : data.regions.map(r => `
+          <div class="region-row">
+            <span class="region-tag" style="color:${severityColor[r.severity]}">[${r.severity}]</span>
+            <span class="region-info">(${r.x}, ${r.y}) ${r.w}×${r.h} px</span>
+          </div>`).join("");
+
     resultSection.innerHTML = `
       <div class="similarity-card">
         <p class="similarity-label">結構相似度</p>
@@ -130,6 +140,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ${alignTag}
         </div>
         <img src="${data.annotated_image_url}" alt="Diff result" class="annotated-img" />
+      </div>
+      <div class="regions-card">
+        <p class="section-title">差異區域</p>
+        ${regionRows}
       </div>
     `;
     resultSection.classList.remove("hidden");

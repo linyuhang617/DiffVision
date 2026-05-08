@@ -6,7 +6,7 @@ import cv2
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services import compare_service, diff_service, align_service
+from app.services import compare_service, diff_service, align_service, region_service
 from app.utils import image_io
 
 router = APIRouter()
@@ -43,11 +43,17 @@ async def compare(req: CompareRequest):
         similarity = compare_service.compute_ssim(gray_a, gray_b_aligned)
         diff_result = diff_service.generate_diff(img_a, gray_a, gray_b_aligned, out_dir)
 
+        regions = region_service.classify_regions(diff_result["contours"])
+        (out_dir / "report.json").write_text(
+            json.dumps([r.dict() for r in regions], ensure_ascii=False)
+        )
+
         return {
             "comparison_id": req.comparison_id,
             "similarity": similarity,
             "annotated_image_url": f"/temp/{req.comparison_id}/annotated.png",
             "aligned": aligned,
+            "regions": [r.dict() for r in regions],
         }
 
     except HTTPException:
