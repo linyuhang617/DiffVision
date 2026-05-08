@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiffVision 👁️</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>DiffVision 👁️</h1>
+    <p class="tagline">上傳兩張圖片，自動偵測差異</p>
+  </header>
+  <main>
+    <section class="upload-row">
+      <div class="upload-card" id="card-a">
+        <label for="input-a" class="upload-label">
+          <span class="upload-icon">＋</span>
+          <span class="upload-text">Image A</span>
+          <span class="upload-hint">點擊選擇圖片</span>
+        </label>
+        <input type="file" id="input-a" accept="image/jpeg,image/png,image/webp" hidden />
+      </div>
+      <div class="upload-divider">VS</div>
+      <div class="upload-card" id="card-b">
+        <label for="input-b" class="upload-label">
+          <span class="upload-icon">＋</span>
+          <span class="upload-text">Image B</span>
+          <span class="upload-hint">點擊選擇圖片</span>
+        </label>
+        <input type="file" id="input-b" accept="image/jpeg,image/png,image/webp" hidden />
+      </div>
+    </section>
+    <div id="status-bar" class="status-bar hidden"></div>
+    <section id="preview-section" class="hidden">
+      <h2 class="section-title">預覽</h2>
+      <div class="preview-row">
+        <div class="preview-col">
+          <p class="preview-label">Image A</p>
+          <img id="preview-a" src="" alt="Preview A" />
+        </div>
+        <div class="preview-col">
+          <p class="preview-label">Image B</p>
+          <img id="preview-b" src="" alt="Preview B" />
+        </div>
+      </div>
+    </section>
+    <section id="result-section" class="hidden"></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

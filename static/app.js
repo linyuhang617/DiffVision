@@ -1,0 +1,82 @@
+let currentComparisonId = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const inputA = document.getElementById("input-a");
+  const inputB = document.getElementById("input-b");
+  const cardA  = document.getElementById("card-a");
+  const cardB  = document.getElementById("card-b");
+  const statusBar      = document.getElementById("status-bar");
+  const previewSection = document.getElementById("preview-section");
+  const resultSection  = document.getElementById("result-section");
+  const previewA = document.getElementById("preview-a");
+  const previewB = document.getElementById("preview-b");
+
+  function showStatus(message, type) {
+    statusBar.textContent = message;
+    statusBar.className = `status-bar ${type}`;
+    statusBar.classList.remove("hidden");
+  }
+
+  function clearStatus() {
+    statusBar.className = "status-bar hidden";
+    statusBar.textContent = "";
+  }
+
+  function resetResults() {
+    previewSection.classList.add("hidden");
+    resultSection.classList.add("hidden");
+    resultSection.innerHTML = "";
+    currentComparisonId = null;
+  }
+
+  inputA.addEventListener("change", () => {
+    if (inputA.files.length) cardA.classList.add("has-file");
+    onBothFilesReady();
+  });
+
+  inputB.addEventListener("change", () => {
+    if (inputB.files.length) cardB.classList.add("has-file");
+    onBothFilesReady();
+  });
+
+  function onBothFilesReady() {
+    if (inputA.files.length && inputB.files.length) {
+      resetResults();
+      uploadFiles(inputA.files[0], inputB.files[0]);
+    }
+  }
+
+  async function uploadFiles(fileA, fileB) {
+    showStatus("上傳中…", "loading");
+    const form = new FormData();
+    form.append("file_a", fileA);
+    form.append("file_b", fileB);
+
+    let response;
+    try {
+      response = await fetch("/upload", { method: "POST", body: form });
+    } catch {
+      showStatus("網路錯誤，請確認伺服器已啟動。", "error");
+      return;
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      showStatus("伺服器回傳格式錯誤。", "error");
+      return;
+    }
+
+    if (!response.ok) {
+      showStatus(data.detail ?? data.error ?? `上傳失敗（${response.status}）`, "error");
+      return;
+    }
+
+    currentComparisonId = data.comparison_id;
+    clearStatus();
+    previewA.src = data.image_a_url;
+    previewB.src = data.image_b_url;
+    previewSection.classList.remove("hidden");
+  }
+});
