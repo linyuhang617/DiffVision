@@ -111,14 +111,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     clearStatus();
-    showSimilarity(data.similarity);
+    showResult(data);
   }
 
-  function showSimilarity(score) {
+  function showResult(data) {
     resultSection.innerHTML = `
       <div class="similarity-card">
         <p class="similarity-label">結構相似度</p>
-        <p class="similarity-score">${score}<span class="similarity-unit">%</span></p>
+        <p class="similarity-score">${data.similarity}<span class="similarity-unit">%</span></p>
+      </div>
+      <div class="annotated-card">
+        <p class="section-title">差異標記圖</p>
+        <img src="${data.annotated_image_url}" alt="Diff result" class="annotated-img" />
       </div>
     `;
     resultSection.classList.remove("hidden");
