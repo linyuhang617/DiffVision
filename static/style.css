@@ -132,3 +132,29 @@ main { max-width: 960px; margin: 0 auto; }
   border-radius: 8px;
   margin-top: 12px;
 }
+
+.annotated-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.align-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+.align-tag.success {
+  background: rgba(76, 175, 125, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(76, 175, 125, 0.3);
+}
+
+.align-tag.warn {
+  background: rgba(245, 166, 35, 0.15);
+  color: #F5A623;
+  border: 1px solid rgba(245, 166, 35, 0.3);
+}

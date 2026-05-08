@@ -6,7 +6,7 @@ import cv2
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services import compare_service, diff_service
+from app.services import compare_service, diff_service, align_service
 from app.utils import image_io
 
 router = APIRouter()
@@ -37,13 +37,17 @@ async def compare(req: CompareRequest):
             img_b  = cv2.resize(img_b,  (img_a.shape[1], img_a.shape[0]))
             gray_b = cv2.resize(gray_b, (gray_a.shape[1], gray_a.shape[0]))
 
-        similarity = compare_service.compute_ssim(gray_a, gray_b)
-        diff_result = diff_service.generate_diff(img_a, gray_a, gray_b, out_dir)
+        img_b_aligned, aligned = align_service.align_images(img_a, img_b)
+        gray_b_aligned = cv2.cvtColor(img_b_aligned, cv2.COLOR_BGR2GRAY)
+
+        similarity = compare_service.compute_ssim(gray_a, gray_b_aligned)
+        diff_result = diff_service.generate_diff(img_a, gray_a, gray_b_aligned, out_dir)
 
         return {
             "comparison_id": req.comparison_id,
             "similarity": similarity,
             "annotated_image_url": f"/temp/{req.comparison_id}/annotated.png",
+            "aligned": aligned,
         }
 
     except HTTPException:

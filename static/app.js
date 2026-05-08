@@ -115,13 +115,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showResult(data) {
+    const alignTag = data.aligned
+      ? `<span class="align-tag success">✓ 已自動對齊</span>`
+      : `<span class="align-tag warn">⚠ 對齊失敗</span>`;
+
     resultSection.innerHTML = `
       <div class="similarity-card">
         <p class="similarity-label">結構相似度</p>
         <p class="similarity-score">${data.similarity}<span class="similarity-unit">%</span></p>
       </div>
       <div class="annotated-card">
-        <p class="section-title">差異標記圖</p>
+        <div class="annotated-header">
+          <p class="section-title">差異標記圖</p>
+          ${alignTag}
+        </div>
         <img src="${data.annotated_image_url}" alt="Diff result" class="annotated-img" />
       </div>
     `;
