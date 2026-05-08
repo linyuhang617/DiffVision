@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import upload
+from app.routers import upload, compare
 
 load_dotenv()
 
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(upload.router)
+app.include_router(compare.router)
 
 Path("temp").mkdir(exist_ok=True)
 app.mount("/temp", StaticFiles(directory="temp"), name="temp")

@@ -74,9 +74,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     currentComparisonId = data.comparison_id;
-    clearStatus();
     previewA.src = data.image_a_url;
     previewB.src = data.image_b_url;
     previewSection.classList.remove("hidden");
+
+    clearStatus();
+    runCompare();
+  }
+
+  async function runCompare() {
+    showStatus("比對中…", "loading");
+
+    let response;
+    try {
+      response = await fetch("/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comparison_id: currentComparisonId }),
+      });
+    } catch {
+      showStatus("比對請求失敗。", "error");
+      return;
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      showStatus("比對回傳格式錯誤。", "error");
+      return;
+    }
+
+    if (!response.ok) {
+      showStatus(data.detail ?? data.error ?? `比對失敗（${response.status}）`, "error");
+      return;
+    }
+
+    clearStatus();
+    showSimilarity(data.similarity);
+  }
+
+  function showSimilarity(score) {
+    resultSection.innerHTML = `
+      <div class="similarity-card">
+        <p class="similarity-label">結構相似度</p>
+        <p class="similarity-score">${score}<span class="similarity-unit">%</span></p>
+      </div>
+    `;
+    resultSection.classList.remove("hidden");
   }
 });
